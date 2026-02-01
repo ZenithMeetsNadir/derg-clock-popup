@@ -1,12 +1,12 @@
 const std = @import("std");
-const c = @import("clock_popup").c;
+const c = @import("derg_clock_popup").c;
 
 pub fn renderFillOuterQCircle(rndr: ?*c.SDL_Renderer, p: c.SDL_Point, r: i32, q: i8, color: c.SDL_Color) void {
     var x = r - 1;
     var y: i32 = 0;
     var dx: i32 = 1;
     var dy: i32 = 1;
-    var err = dx - (r << 1);
+    var err = dx - r * 2;
 
     const xq: i32 = switch (q) {
         4, 1 => 1,

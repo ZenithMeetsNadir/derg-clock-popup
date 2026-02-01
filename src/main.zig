@@ -1,14 +1,16 @@
 const std = @import("std");
 const time = std.time;
-const c = @import("clock_popup").c;
+const derg_clock_popup = @import("derg_clock_popup");
+const c = derg_clock_popup.c;
+const build_options = derg_clock_popup.build_options;
 const anim = @import("anim.zig");
 const raster = @import("raster.zig");
 
 const time_buf_size = 8;
 
 const title = "derg clock popup";
-const font_path = "/usr/share/fonts/TTF/PressStart-Regular.ttf";
-const derg_frame_path = "/usr/local/share/clock-popup/derg-frames/";
+const font_path = build_options.assets_path ++ "/fonts/PressStart-Regular.ttf";
+const derg_frame_path = build_options.assets_path ++ "/derg-frames/";
 
 const font_size: f32 = 120;
 
@@ -125,7 +127,7 @@ pub fn main() !void {
         &rndr,
     )) {
         std.log.err("failed to create window and renderer: {s}\n", .{c.SDL_GetError()});
-        return error.WindowCreateFailed;
+        return error.WindowAndRendererCreationFailed;
     }
     defer {
         c.SDL_DestroyRenderer(rndr);
@@ -144,20 +146,16 @@ pub fn main() !void {
     var window_y_frame: c_int = undefined;
     var window_frame_dir: f32 = undefined;
     var window_anim_dir: c_int = undefined;
+    var window_anim_paused: bool = false;
+    var window_anim_pause_timeout: anim.TickTimeout = .{ .timeout_ms = 2000 };
 
     var window_frame_lim: anim.FrameLimiter = .{ .frame_rate = easing.anim_frame_rate, .last_tick = 0 };
-
-    const th = std.Thread.spawn(.{}, timerInterrupt, .{anim_pause_ms}) catch {
-        std.log.err("failed to create timer thread\n", .{});
-        return error.ThreadCreateFailed;
-    };
-    th.detach();
 
     var derg_anim_iter: anim.ImgAnimIterator(16, derg_frame_path, 3, ".png") = .init(rndr);
     defer derg_anim_iter.deinit();
 
     var derg_frame_lim: anim.FrameLimiter = .{ .frame_rate = 8, .last_tick = 0 };
-    var derg_frame_tex: ?*c.SDL_Texture = undefined;
+    var derg_frame_tex: ?*c.SDL_Texture = null;
     var derg_y_frame: c_int = undefined;
 
     var event: c.SDL_Event = undefined;
@@ -173,7 +171,11 @@ pub fn main() !void {
 
         var redraw = false;
         const ticks = c.SDL_GetTicks();
-        if (window_frame_lim.frameTick(ticks) and !window_anim_pause.load(.acquire)) {
+
+        if (window_anim_paused and window_anim_pause_timeout.isTimeoutTick(ticks))
+            window_anim_paused = false;
+
+        if (window_frame_lim.isFrameTick(ticks) and !window_anim_paused) {
             redraw = true;
 
             if (!window_anim_first_part and window_frame_iter.step > window_frame_iter.total_steps)
@@ -189,11 +191,12 @@ pub fn main() !void {
                 }
             } else if (window_anim_first_part) {
                 window_anim_first_part = false;
-                window_anim_pause.store(true, .release);
+                window_anim_paused = true;
+                window_anim_pause_timeout.start(ticks);
                 window_frame_iter.step = 0;
             } else anim_end = true;
         }
-        if (derg_frame_lim.frameTick(ticks)) {
+        if (derg_frame_lim.isFrameTick(ticks)) {
             redraw = true;
 
             derg_frame_tex = try derg_anim_iter.next();
@@ -286,18 +289,5 @@ pub fn main() !void {
 
             _ = c.SDL_RenderPresent(rndr);
         }
-    }
-}
-
-var window_anim_pause: std.atomic.Value(bool) = .init(false);
-
-fn timerInterrupt(pause_ms: u64) !void {
-    while (true) {
-        if (window_anim_pause.load(.acquire)) {
-            std.Thread.sleep(std.time.ns_per_ms * pause_ms);
-            window_anim_pause.store(false, .release);
-        }
-
-        try std.Thread.yield();
     }
 }

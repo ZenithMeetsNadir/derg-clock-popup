@@ -1,5 +1,5 @@
 const std = @import("std");
-const c = @import("clock_popup").c;
+const c = @import("derg_clock_popup").c;
 
 pub fn FrameIterator(comptime EasingT: type) type {
     if (!std.meta.hasMethod(EasingT, "countSteps") or !std.meta.hasMethod(EasingT, "calcFrame"))
@@ -57,7 +57,7 @@ pub fn ImgAnimIterator(
 ) type {
     return struct {
         const name_index_len = name_idx_len orelse getNameIndexLen(num_frames - 1);
-        const format: [7]u8 = .{ '{', 'd', ':', '0', '>', getDigitChar(name_index_len), '}' };
+        const format: [7]u8 = ("{d:0>" ++ .{getDigitChar(name_index_len)} ++ "}").*;
         const path_len = frame_dir.len + name_index_len + ext.len;
 
         frame_count: u32 = num_frames,
@@ -113,22 +113,43 @@ pub fn ImgAnimIterator(
                 self.cur_frame += 1;
             } else self.cur_frame = 0;
 
-            return self.frame_textures[idx] orelse blk: {
+            return self.frame_textures[idx] orelse {
                 std.log.err("failed to load texture: {s}\n", .{c.SDL_GetError()});
-                break :blk error.TextureNotLoaded;
+                return error.TextureNotLoaded;
             };
         }
     };
 }
 
 pub const FrameLimiter = struct {
-    frame_rate: u32,
+    frame_rate: f64,
     last_tick: u64 = 0,
 
-    pub fn frameTick(self: *@This(), tick: u64) bool {
-        const rel_tick = tick * @as(u64, @intCast(self.frame_rate)) / 1000 + 1;
+    pub fn isFrameTick(self: *@This(), tick_ms: u64) bool {
+        const rel_tick = @as(u64, @intFromFloat(@as(f64, @floatFromInt(tick_ms)) * self.frame_rate / 1000)) + 1;
         if (rel_tick > self.last_tick) {
             self.last_tick = rel_tick;
+            return true;
+        }
+
+        return false;
+    }
+};
+
+pub const TickTimeout = struct {
+    timeout_ms: u64,
+    start_tick: u64 = undefined,
+
+    pub fn start(self: *@This(), tick_ms: u64) void {
+        self.start_tick = tick_ms;
+    }
+
+    pub fn isTimeoutTick(self: *@This(), tick_ms: u64) bool {
+        if (tick_ms < self.start_tick)
+            return false;
+
+        if (tick_ms - self.start_tick >= self.timeout_ms) {
+            self.start_tick = std.math.maxInt(@FieldType(@This(), "start_tick"));
             return true;
         }
 

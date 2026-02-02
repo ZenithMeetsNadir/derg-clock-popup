@@ -40,7 +40,7 @@ The same goes for Windows, where package managers aren't very popular. You can e
 
 On Linux, the preferred directory to install from source is to `/usr/local` for system-wide and to `$HOME/.local` for a single user. You can use the `--prefix` (`-p`) build option to specify where to install the program (the executable itself will end up at `{prefix}/bin/`).
 
-The corresponding windows prefixes are `"C:\Program Files\derg-clock-popup"` and `%LOCALAPPDATA%\derg-clock-popup`
+The corresponding windows prefixes are `"C:\Program Files"` and `%LOCALAPPDATA%`
 
 Replace `{}` with your specific values. `[]` is optional.
 

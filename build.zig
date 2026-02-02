@@ -18,12 +18,6 @@ pub fn build(b: *std.Build) void {
 
     const assets_dir = switch (target.result.os.tag) {
         .linux => b.pathJoin(&.{ "share", exe_name }),
-        .windows => blk: {
-            if (!std.mem.endsWith(u8, b.install_prefix, exe_name))
-                b.install_prefix = b.pathJoin(&.{ b.install_prefix, exe_name });
-
-            break :blk "assets";
-        },
         else => "assets",
     };
 
@@ -44,6 +38,7 @@ pub fn build(b: *std.Build) void {
     });
 
     exe_mod.addLibraryPath(.{ .cwd_relative = sdls_lib_path });
+    exe_mod.addRPath(.{ .cwd_relative = sdls_lib_path });
     exe_mod.linkSystemLibrary("SDL3", .{});
     exe_mod.linkSystemLibrary("SDL3_ttf", .{});
     exe_mod.linkSystemLibrary("SDL3_image", .{});
@@ -53,7 +48,7 @@ pub fn build(b: *std.Build) void {
         .root_module = exe_mod,
     });
 
-    b.installDirectory(.{ .source_dir = b.path("assets"), .install_subdir = ".", .install_dir = .{ .custom = assets_dir } });
+    b.installDirectory(.{ .source_dir = b.path("assets/install"), .install_subdir = ".", .install_dir = .{ .custom = assets_dir } });
     b.installArtifact(exe);
 
     const exe_check = b.addExecutable(.{

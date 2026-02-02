@@ -14,7 +14,7 @@ I highly suggest you configure your wm and compositor to leave this window out o
 
 ### Windows
 
-[Grab the latest release (.zip portable version)](https://github.com/ZenithMeetsNadir/derg-clock-popup/releases) or [build from source](#build-from-source) (this one is quite tedious on Windows)
+[Grab the latest release (.zip portable version)](https://github.com/ZenithMeetsNadir/derg-clock-popup/releases/tag/v1.0.0) or [build from source](#build-from-source) (this one is quite tedious on Windows)
 
 ### Linux
 

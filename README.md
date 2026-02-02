@@ -6,7 +6,9 @@ Currently, it only has this flavor:
 
 - A popup window taking up about a nineth of your screen, telling the time, with a sleeping derg splayed on top of it.
 
-![showcase video](assets/showcase//derg-clock-popup-showcase.mp4)
+<video width="100%" controls>
+  <source src="video.mov" type="video/mp4">
+</video>
 
 I highly suggest you configure your wm and compositor to leave this window out of any open/close animations, shadows, blur etc. Those effects unfortunatelly get in the way of the promised clean look, which the popup window manages on its own.
 

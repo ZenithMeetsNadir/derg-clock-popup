@@ -63,7 +63,7 @@ pub fn build(b: *std.Build) !void {
             else => "assets",
         } });
 
-        const assets_path = b.pathJoin(&.{ b.install_prefix, assets_dir });
+        const assets_path = if (target.result.os.tag == .linux) b.pathJoin(&.{ b.install_prefix, assets_dir }) else "assets";
 
         const build_options = b.addOptions();
         build_options.addOption([]const u8, "assets_path", assets_path);

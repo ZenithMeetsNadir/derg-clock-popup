@@ -3,6 +3,4 @@
 zig-out/
 .zig-cache/
 
-SDL/
-SDL_ttf/
-SDL_image/
+win_deps/

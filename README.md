@@ -4,7 +4,7 @@ This is a fun little spontaneous project I've originally put together in the spa
 
 Currently, it only has this flavor: 
 
-- A popup window taking up about a nineth of your screen, telling the time, with a sleeping derg splayed on top of it.
+- A popup window taking up about a nineth of your screen, telling the time, with a sleeping derg sprawled on top of it.
 
 ![showcase video](assets/showcase/derg-clock-popup-showcase.gif)
 

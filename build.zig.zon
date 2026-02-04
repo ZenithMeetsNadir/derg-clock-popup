@@ -1,6 +1,6 @@
 .{
     .name = .derg_clock_popup,
-    .version = "2.0.0",
+    .version = "1.0.0",
     .fingerprint = 0x210dd33cb75b4c35,
     .minimum_zig_version = "0.15.1",
     .dependencies = .{},

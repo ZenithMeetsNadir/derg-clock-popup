@@ -112,10 +112,15 @@ pub fn build(b: *std.Build) !void {
 
         if (release and target.result.os.tag == .windows) {
             const zip_tool = b.addSystemCommand(&.{"zip"});
-            const to_be_archived_path = b.pathJoin(&.{ b.install_prefix, name_target_triple });
-            const zip_path = try std.mem.join(b.allocator, "", &.{ to_be_archived_path, ".zip" });
-            zip_tool.addArgs(&.{ "-r", zip_path, to_be_archived_path });
+            zip_tool.addArgs(&.{ "-r", "-", name_target_triple });
+            zip_tool.setCwd(.{ .cwd_relative = b.install_prefix });
+
             _ = zip_tool.captureStdErr();
+            const stdout = zip_tool.captureStdOut();
+            const zip_path = try std.mem.join(b.allocator, "", &.{ name_target_triple, ".zip" });
+            const zip_file = b.addInstallFile(stdout, zip_path);
+            b.getInstallStep().dependOn(&zip_file.step);
+
             zip_tool.step.dependOn(&install_exe.step);
             b.getInstallStep().dependOn(&zip_tool.step);
         }
